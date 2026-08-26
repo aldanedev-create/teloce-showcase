@@ -9,42 +9,43 @@
         <div class="actions"><button @click="openTutorial">Learn the pattern <span>&rarr;</span></button><button class="motion-toggle" @click="toggleRotation" :aria-pressed="rotating">{{ rotating ? 'Pause motion' : 'Resume motion' }}</button><a href="#/playground">Explore the playground</a></div>
         <div class="proof"><span><b>3</b> routes</span><span><b>1</b> Flask server</span><span><b>0</b> npm required</span></div>
       </div>
-      <div id="three-scene" class="scene" aria-label="Animated Three.js crystal"><div v-if="webglError" class="scene-fallback">WebGL is unavailable, so the motion fallback is active.</div></div>
+      <div id="three-scene" class="scene" aria-label="Animated Three.js crystal"><div v-if="sceneLoading || sceneError" class="scene-fallback">{{ sceneError ? 'Three.js is unavailable, so the motion fallback is active.' : 'Loading interactive motion...' }}</div></div>
     </section>
     <footer><span>Made with Teloce-Py</span><span>Router + reactive .vel + WebGL</span></footer>
   </main>
 </template>
 <script>
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js";
-
 export default {
-  data() { return { rotating: true, frame: 0, webglError: false }; },
+  data() { return { rotating: true, frame: 0, sceneLoading: true, sceneError: false, destroyed: false }; },
   mounted() {
-    const host = document.getElementById("three-scene");
-    try {
-        this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(42, host.clientWidth / host.clientHeight, 0.1, 100);
-    this.camera.position.z = 3.2;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setSize(host.clientWidth, host.clientHeight);
-    host.appendChild(this.renderer.domElement);
-    this.mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9, 2), new THREE.MeshPhysicalMaterial({ color: "#ad8cff", metalness: 0.25, roughness: 0.08, transmission: 0.35, transparent: true, opacity: 0.92 }));
-    this.scene.add(this.mesh);
-    this.scene.add(new THREE.AmbientLight("#8795ff", 1.8));
-    const light = new THREE.PointLight("#72e6d0", 16, 12); light.position.set(2, 2, 3); this.scene.add(light);
-    const second = new THREE.PointLight("#ff9dd8", 12, 10); second.position.set(-2, -1, 2); this.scene.add(second);
-    this.resize = () => { this.camera.aspect = host.clientWidth / host.clientHeight; this.camera.updateProjectionMatrix(); this.renderer.setSize(host.clientWidth, host.clientHeight); };
-        window.addEventListener("resize", this.resize); this.animateFrame();
-    } catch (error) {
-        this.webglError = true;
-        console.error("Teloce Motion could not initialize WebGL:", error);
-    }
+    import("https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js").then(module => {
+      if (!this.destroyed) this.startScene(module);
+    }, error => { this.handleSceneError(error); });
   },
-  beforeUnmount() { cancelAnimationFrame(this.frame); window.removeEventListener("resize", this.resize); this.mesh?.geometry.dispose(); this.mesh?.material.dispose(); this.renderer?.dispose(); },
+  beforeUnmount() { this.destroyed = true; cancelAnimationFrame(this.frame); window.removeEventListener("resize", this.resize); this.mesh?.geometry.dispose(); this.mesh?.material.dispose(); this.renderer?.dispose(); },
   methods: {
     openTutorial() { window.__teloceRouter?.push("/tutorial"); },
     toggleRotation() { this.rotating = !this.rotating; },
+    handleSceneError(error) { this.sceneLoading = false; this.sceneError = true; console.error("Teloce Motion could not load Three.js/WebGL:", error); },
+    startScene(THREE) {
+      const host = document.getElementById("three-scene");
+      try {
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(42, host.clientWidth / host.clientHeight, 0.1, 100);
+        this.camera.position.z = 3.2;
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setSize(host.clientWidth, host.clientHeight);
+        host.appendChild(this.renderer.domElement);
+        this.mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9, 2), new THREE.MeshPhysicalMaterial({ color: "#ad8cff", metalness: 0.25, roughness: 0.08, transmission: 0.35, transparent: true, opacity: 0.92 }));
+        this.scene.add(this.mesh);
+        this.scene.add(new THREE.AmbientLight("#8795ff", 1.8));
+        const light = new THREE.PointLight("#72e6d0", 16, 12); light.position.set(2, 2, 3); this.scene.add(light);
+        const second = new THREE.PointLight("#ff9dd8", 12, 10); second.position.set(-2, -1, 2); this.scene.add(second);
+        this.resize = () => { this.camera.aspect = host.clientWidth / host.clientHeight; this.camera.updateProjectionMatrix(); this.renderer.setSize(host.clientWidth, host.clientHeight); };
+        window.addEventListener("resize", this.resize); this.sceneLoading = false; this.animateFrame();
+      } catch (error) { this.handleSceneError(error); }
+    },
     animateFrame() { if (!this.renderer) return; this.frame = requestAnimationFrame(this.animateFrame.bind(this)); if (this.rotating) { this.mesh.rotation.x += 0.004; this.mesh.rotation.y += 0.007; } this.renderer.render(this.scene, this.camera); }
   }
 };
