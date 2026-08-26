@@ -6,7 +6,7 @@
         <p class="eyebrow">Flask &middot; .vel &middot; Three.js</p>
         <h1>Build motion into your Python apps.</h1>
         <p class="lede">A tiny, production-shaped showcase of Teloce-Py routing a beautiful interactive scene&mdash;without a JavaScript build tool.</p>
-        <div class="actions"><button @click="openTutorial">Learn the pattern <span>&rarr;</span></button><a href="#/playground">Explore the playground</a></div>
+        <div class="actions"><button @click="openTutorial">Learn the pattern <span>&rarr;</span></button><button class="motion-toggle" @click="toggleRotation" :aria-pressed="rotating">{{ rotating ? 'Pause motion' : 'Resume motion' }}</button><a href="#/playground">Explore the playground</a></div>
         <div class="proof"><span><b>3</b> routes</span><span><b>1</b> Flask server</span><span><b>0</b> npm required</span></div>
       </div>
       <div id="three-scene" class="scene" aria-label="Animated Three.js crystal"></div>
@@ -39,6 +39,7 @@ export default {
   beforeUnmount() { cancelAnimationFrame(this.frame); window.removeEventListener("resize", this.resize); this.mesh?.geometry.dispose(); this.mesh?.material.dispose(); this.renderer?.dispose(); },
   methods: {
     openTutorial() { window.__teloceRouter?.push("/tutorial"); },
+    toggleRotation() { this.rotating = !this.rotating; },
     animateFrame() { this.frame = requestAnimationFrame(this.animateFrame.bind(this)); if (this.rotating) { this.mesh.rotation.x += 0.004; this.mesh.rotation.y += 0.007; } this.renderer.render(this.scene, this.camera); }
   }
 };
