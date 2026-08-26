@@ -9,7 +9,7 @@
         <div class="actions"><button @click="openTutorial">Learn the pattern <span>&rarr;</span></button><button class="motion-toggle" @click="toggleRotation" :aria-pressed="rotating">{{ rotating ? 'Pause motion' : 'Resume motion' }}</button><a href="#/playground">Explore the playground</a></div>
         <div class="proof"><span><b>3</b> routes</span><span><b>1</b> Flask server</span><span><b>0</b> npm required</span></div>
       </div>
-      <div id="three-scene" class="scene" aria-label="Animated Three.js crystal"><div class="scene-fallback">Your browser is showing the motion fallback.</div></div>
+      <div id="three-scene" class="scene" aria-label="Animated Three.js crystal"><div v-if="webglError" class="scene-fallback">WebGL is unavailable, so the motion fallback is active.</div></div>
     </section>
     <footer><span>Made with Teloce-Py</span><span>Router + reactive .vel + WebGL</span></footer>
   </main>
