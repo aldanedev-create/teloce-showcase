@@ -1,0 +1,18 @@
+<template>
+  <main class="tutorial">
+    <nav class="nav"><a class="brand" href="#/">Teloce<span>Motion</span></a><a href="#/playground">Playground &rarr;</a></nav>
+    <section class="intro"><p class="eyebrow">A copy-paste lesson</p><h1>One Flask shell.<br /><em>Three routes.</em></h1><p>Let Python serve the page, let Teloce compile the components, and let the browser own navigation and animation.</p></section>
+    <section class="steps">
+      <article><span>01</span><h2>Write a component</h2><p>Put template, state, lifecycle, and scoped CSS together in a ".vel" file.</p><pre>&lt;template&gt; ... &lt;/template&gt;
+export default { data() { return { title: "Hello" } } }</pre></article>
+      <article><span>02</span><h2>Define routes</h2><p>Compile a Python route table into a dependency-free browser router.</p><pre>routes = [{ "path": "/", "component": "HomePage" }, { "path": "/tutorial", "component": "TutorialPage" }]</pre></article>
+      <article><span>03</span><h2>Mount once</h2><p>Your HTML shell only needs a mount point. The router renders the active component.</p><pre>&lt;div id="app"&gt;&lt;/div&gt;
+router.mount(document.querySelector("#app"))</pre></article>
+    </section>
+    <a class="back" href="#/">&larr; Back to the animation</a>
+  </main>
+</template>
+<script>export default { data() { return {}; } };</script>
+<style scoped>
+* { box-sizing: border-box; } .tutorial { min-height: 100vh; padding: 1.25rem max(1.25rem, calc((100% - 74rem) / 2)) 4rem; background: #f3f0ff; color: #1b1731; font: 1rem/1.5 system-ui, sans-serif; } .nav { display: flex; justify-content: space-between; max-width: 74rem; margin: auto; padding: .8rem 0; } .brand { color: #1b1731; font-weight: 800; letter-spacing: -.04em; text-decoration: none; } .brand span { color: #6d5de8; } a { color: #6557cb; text-decoration: none; } .intro { max-width: 58rem; margin: 7rem auto 4rem; } .eyebrow { color: #6d5de8; font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; } h1 { margin: .7rem 0 1rem; font-size: clamp(3rem, 8vw, 6rem); line-height: .96; letter-spacing: -.08em; } h1 em { color: #7b68ee; font-style: normal; } .intro p:last-child { max-width: 34rem; color: #6e6885; font-size: 1.1rem; } .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 74rem; margin: auto; } article { padding: 1.4rem; border: 1px solid #dad4f4; border-radius: 1rem; background: #fff; box-shadow: 0 1rem 3rem #483e8a10; } article > span { color: #7b68ee; font-weight: 800; } h2 { margin: .8rem 0 .4rem; font-size: 1.2rem; } article p { min-height: 4.5rem; color: #6e6885; } pre { overflow: auto; min-height: 7rem; margin: 1.2rem -.2rem 0; padding: 1rem; border-radius: .7rem; background: #18152a; color: #d6c8ff; font: .78rem/1.55 ui-monospace, monospace; } .back { display: block; max-width: 74rem; margin: 2rem auto; font-weight: 800; } @media (max-width: 48rem) { .intro { margin: 4rem auto 2rem; } .steps { grid-template-columns: 1fr; } article p { min-height: auto; } }
+</style>

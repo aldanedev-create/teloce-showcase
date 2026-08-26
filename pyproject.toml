@@ -1,0 +1,10 @@
+[project]
+name = "teloce-showcase"
+version = "0.1.0"
+description = "A small Flask, Teloce-Py router, and Three.js showcase"
+requires-python = ">=3.10"
+dependencies = ["Flask>=3.0,<4", "teloce-py"]
+
+[tool.vercel.scripts]
+build = "python build.py"
+
