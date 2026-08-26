@@ -9,7 +9,7 @@
         <div class="actions"><button @click="openTutorial">Learn the pattern <span>&rarr;</span></button><button class="motion-toggle" @click="toggleRotation" :aria-pressed="rotating">{{ rotating ? 'Pause motion' : 'Resume motion' }}</button><a href="#/playground">Explore the playground</a></div>
         <div class="proof"><span><b>3</b> routes</span><span><b>1</b> Flask server</span><span><b>0</b> npm required</span></div>
       </div>
-      <div id="three-scene" class="scene" aria-label="Animated Three.js crystal"></div>
+      <div id="three-scene" class="scene" aria-label="Animated Three.js crystal"><div class="scene-fallback">Your browser is showing the motion fallback.</div></div>
     </section>
     <footer><span>Made with Teloce-Py</span><span>Router + reactive .vel + WebGL</span></footer>
   </main>
@@ -18,10 +18,11 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js";
 
 export default {
-  data() { return { rotating: true, frame: 0 }; },
+  data() { return { rotating: true, frame: 0, webglError: false }; },
   mounted() {
     const host = document.getElementById("three-scene");
-    this.scene = new THREE.Scene();
+    try {
+        this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(42, host.clientWidth / host.clientHeight, 0.1, 100);
     this.camera.position.z = 3.2;
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -34,16 +35,25 @@ export default {
     const light = new THREE.PointLight("#72e6d0", 16, 12); light.position.set(2, 2, 3); this.scene.add(light);
     const second = new THREE.PointLight("#ff9dd8", 12, 10); second.position.set(-2, -1, 2); this.scene.add(second);
     this.resize = () => { this.camera.aspect = host.clientWidth / host.clientHeight; this.camera.updateProjectionMatrix(); this.renderer.setSize(host.clientWidth, host.clientHeight); };
-    window.addEventListener("resize", this.resize); this.animateFrame();
+        window.addEventListener("resize", this.resize); this.animateFrame();
+    } catch (error) {
+        this.webglError = true;
+        console.error("Teloce Motion could not initialize WebGL:", error);
+    }
   },
   beforeUnmount() { cancelAnimationFrame(this.frame); window.removeEventListener("resize", this.resize); this.mesh?.geometry.dispose(); this.mesh?.material.dispose(); this.renderer?.dispose(); },
   methods: {
     openTutorial() { window.__teloceRouter?.push("/tutorial"); },
     toggleRotation() { this.rotating = !this.rotating; },
-    animateFrame() { this.frame = requestAnimationFrame(this.animateFrame.bind(this)); if (this.rotating) { this.mesh.rotation.x += 0.004; this.mesh.rotation.y += 0.007; } this.renderer.render(this.scene, this.camera); }
+    animateFrame() { if (!this.renderer) return; this.frame = requestAnimationFrame(this.animateFrame.bind(this)); if (this.rotating) { this.mesh.rotation.x += 0.004; this.mesh.rotation.y += 0.007; } this.renderer.render(this.scene, this.camera); }
   }
 };
 </script>
 <style scoped>
 * { box-sizing: border-box; } .home { min-height: 100vh; padding: 1.25rem max(1.25rem, calc((100% - 74rem) / 2)); background: radial-gradient(circle at 72% 42%, #32255b 0, #13162c 25%, #070a14 62%); color: #f5f3ff; font: 1rem/1.5 system-ui, sans-serif; } .nav { display: flex; align-items: center; justify-content: space-between; max-width: 74rem; margin: auto; padding: .8rem 0; } .brand { color: #fff; font-weight: 800; letter-spacing: -.04em; text-decoration: none; } .brand span { color: #a899ff; } .links { display: flex; gap: 1.3rem; } a { color: #aeb6d2; text-decoration: none; } a:hover { color: #fff; } .hero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(2rem, 7vw, 7rem); max-width: 74rem; min-height: calc(100vh - 8rem); margin: auto; } .eyebrow { color: #72e6d0; font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; } h1 { max-width: 40rem; margin: .7rem 0 1.2rem; font-size: clamp(3rem, 7vw, 6.4rem); line-height: .98; letter-spacing: -.08em; } .lede { max-width: 34rem; color: #aeb6d2; font-size: 1.08rem; } .actions { display: flex; align-items: center; gap: 1.25rem; margin-top: 2rem; } button { border: 0; border-radius: .7rem; padding: .85rem 1.05rem; background: #d6c8ff; color: #1b1731; font-weight: 800; cursor: pointer; } button span { margin-left: .45rem; font-size: 1.15rem; } .proof { display: flex; gap: 1.3rem; margin-top: 3rem; color: #77809e; font-size: .78rem; } .proof b { display: block; color: #f3efff; font-size: 1.2rem; } .scene { width: 100%; height: min(62vh, 35rem); min-height: 22rem; border: 1px solid #5b5a91; border-radius: 1.5rem; background: radial-gradient(circle at 50% 45%, #684ca055, #0b1020 65%); box-shadow: 0 1.5rem 5rem #0008, inset 0 0 4rem #8875ff18; } .scene canvas { display: block; width: 100%; height: 100%; } footer { display: flex; justify-content: space-between; max-width: 74rem; margin: auto; padding: 1.2rem 0; border-top: 1px solid #252a44; color: #65708d; font-size: .75rem; } @media (max-width: 48rem) { .hero { grid-template-columns: 1fr; min-height: auto; padding: 4rem 0; } h1 { font-size: clamp(3rem, 15vw, 5rem); } .scene { order: -1; min-height: 18rem; height: 54vw; } .proof { margin-top: 2rem; } footer { gap: .8rem; flex-direction: column; } } @media (prefers-reduced-motion: reduce) { .scene { opacity: .8; } }
+.scene { position: relative; overflow: hidden; }
+.scene canvas { position: relative; z-index: 1; }
+.scene-fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 13rem 2rem 2rem; color: #b8aed8; text-align: center; }
+.scene-fallback::before { content: ''; position: absolute; width: 9rem; height: 9rem; border: .9rem solid #9b86ff66; border-top-color: #72e6d0; border-radius: 50%; animation: fallback-spin 3s linear infinite; }
+@keyframes fallback-spin { to { transform: rotate(360deg); } }
 </style>
